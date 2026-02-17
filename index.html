@@ -4,45 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maruko Grocery Checklist</title>
-  <!-- Load Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Load React & ReactDOM -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <!-- Load Babel untuk JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Load Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  
   <style>
+    body { background-color: #FFFBEB; font-family: 'Nunito', sans-serif; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    button, input {
-      touch-action: manipulation;
-    }
-    
-    body {
-      background-color: #FFFBEB;
-      font-family: 'Nunito', sans-serif;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in {
-      animation: fadeIn 0.3s ease-out forwards;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
-    }
-    .animate-shake {
-      animation: shake 0.2s ease-in-out infinite;
-    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
@@ -55,144 +27,62 @@
     const Icon = ({ name, size = 24, color = "currentColor", fill = "none", strokeWidth = 2, className = "" }) => {
       const iconData = lucide[name];
       if (!iconData) return null;
-
       return (
-        <svg
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill={fill}
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={className}
-          dangerouslySetInnerHTML={{ 
-            __html: iconData.map(tag => {
-              const [tagName, attrs] = tag;
-              const attrString = Object.entries(attrs)
-                .map(([key, value]) => `${key}="${value}"`)
-                .join(' ');
-              return `<${tagName} ${attrString} />`;
-            }).join('')
-          }}
-        />
+        <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}
+          dangerouslySetInnerHTML={{ __html: iconData.map(tag => `<${tag[0]} ${Object.entries(tag[1]).map(([k, v]) => `${k}="${v}"`).join(' ')} />`).join('') }} />
       );
     };
 
-    const MARKET_DATA = [
-      // Sayur & Bahan Basah
-      { id: 1, name: 'Sayur Midin (Seikat)', category: 'Sayur', price: 4.50 },
-      { id: 2, name: 'Sayur Paku (Seikat)', category: 'Sayur', price: 4.00 },
-      { id: 3, name: 'Daun Ubi (Seikat)', category: 'Sayur', price: 2.00 },
-      { id: 4, name: 'Timun Dayak (1kg)', category: 'Sayur', price: 5.50 },
-      { id: 21, name: 'Sawi Jepun (Pack)', category: 'Sayur', price: 3.20 },
-      { id: 22, name: 'Kubis Bulat (1kg)', category: 'Sayur', price: 4.80 },
-      { id: 23, name: 'Cili Padi (100g)', category: 'Sayur', price: 3.50 },
-      { id: 24, name: 'Bawang Besar (1kg)', category: 'Sayur', price: 5.00 },
-      { id: 25, name: 'Bawang Putih (500g)', category: 'Sayur', price: 6.50 },
-      { id: 26, name: 'Halia (200g)', category: 'Sayur', price: 2.50 },
-      { id: 27, name: 'Kentang (1kg)', category: 'Sayur', price: 4.50 },
-      { id: 28, name: 'Tomato (1kg)', category: 'Sayur', price: 5.50 },
-      { id: 101, name: 'Lobak Merah (Pack)', category: 'Sayur', price: 3.50 },
-      { id: 102, name: 'Bawang Merah (500g)', category: 'Sayur', price: 4.50 },
-      
-      // Ikan, Daging & Sejuk Beku
-      { id: 11, name: 'Ayam Segar (1kg)', category: 'Ikan & Daging', price: 11.50 },
-      { id: 12, name: 'Daging Lembu (500g)', category: 'Ikan & Daging', price: 22.00 },
-      { id: 13, name: 'Ikan Kembung (1kg)', category: 'Ikan & Daging', price: 14.00 },
-      { id: 14, name: 'Udang Harimau (500g)', category: 'Ikan & Daging', price: 25.00 },
-      { id: 59, name: 'Telur Ayam Gred A (30s)', category: 'Ikan & Daging', price: 17.50 },
-      { id: 103, name: 'Sosej Ayam (Pack)', category: 'Ikan & Daging', price: 6.50 },
-      
-      // Beras, Mi & Kering
-      { id: 5, name: 'Beras Bario (1kg)', category: 'Beras & Mi', price: 18.00 },
-      { id: 6, name: 'Beras Wangi (5kg)', category: 'Beras & Mi', price: 32.00 },
-      { id: 7, name: 'Mi Segera Maggi (5s)', category: 'Beras & Mi', price: 5.50 },
-      { id: 8, name: 'Roti Putih Gardenia', category: 'Beras & Mi', price: 3.00 },
-      { id: 9, name: 'Bihun (400g)', category: 'Beras & Mi', price: 3.80 },
-      { id: 104, name: 'Kurma (Pack)', category: 'Beras & Mi', price: 12.00 },
-      
-      // Pantry & Bahan Masakan
-      { id: 65, name: 'Milo (1kg)', category: 'Pantry', price: 23.00 },
-      { id: 66, name: 'Kopi Kapal Api', category: 'Pantry', price: 10.50 },
-      { id: 67, name: 'Susu Pekat (Tin)', category: 'Pantry', price: 3.20 },
-      { id: 68, name: 'Gula Pasir (1kg)', category: 'Pantry', price: 2.85 },
-      { id: 69, name: 'Garam Halus (500g)', category: 'Pantry', price: 1.20 },
-      { id: 70, name: 'Tepung Gandum (1kg)', category: 'Pantry', price: 3.50 },
-      { id: 71, name: 'Kicap Lemak Manis', category: 'Pantry', price: 6.80 },
-      { id: 72, name: 'Sos Cili (Botol)', category: 'Pantry', price: 4.50 },
-      { id: 73, name: 'Santan Kotak (200ml)', category: 'Pantry', price: 2.90 },
-      { id: 105, name: 'Rempah Sup Bunjut', category: 'Pantry', price: 1.20 },
-      { id: 106, name: 'Asam Keping (Pack)', category: 'Pantry', price: 2.50 },
-      { id: 107, name: 'Kicap Masin', category: 'Pantry', price: 6.50 },
-      { id: 108, name: 'Susu UHT (6 x 200ml)', category: 'Pantry', price: 10.80 },
-      { id: 109, name: 'Cili Giling (Pack)', category: 'Pantry', price: 3.50 },
-      { id: 110, name: 'Kordial Grenadine', category: 'Pantry', price: 14.00 },
-      
-      // Barangan Rumah
-      { id: 20, name: 'Minyak Masak (5kg)', category: 'Barangan Rumah', price: 29.50 },
-      { id: 80, name: 'Sabun Mandi (3s)', category: 'Barangan Rumah', price: 12.00 },
-      { id: 81, name: 'Ubat Gigi (Besar)', category: 'Barangan Rumah', price: 14.50 },
-      { id: 82, name: 'Sabun Basuh Baju (2kg)', category: 'Barangan Rumah', price: 24.00 },
-      { id: 83, name: 'Tisu Tandas (10 rull)', category: 'Barangan Rumah', price: 15.00 },
-      { id: 111, name: 'Pencuci Pinggan Mangkuk', category: 'Barangan Rumah', price: 4.50 },
-    ];
-
+    // --- URL WEB APP TERKINI ANDA ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby1Az63RdSIb6Uaz_9r7G4gcwW_DcozJFl_lcRWmZLBP5Oq8lWANvvwm0UdoukGpe6Qrg/exec";
 
     function App() {
-      const [activeTab, setActiveTab] = useState('market');
+      const [activeTab, setActiveTab] = useState('list');
       const [myList, setMyList] = useState([]);
-      const [budget, setBudget] = useState(100);
-      const [searchTerm, setSearchTerm] = useState('');
-      const [customItemName, setCustomItemName] = useState('');
-      const [customItemPrice, setCustomItemPrice] = useState('');
-      const [isSaving, setIsSaving] = useState(false);
+      const [isLoading, setIsLoading] = useState(false);
       const [statusMsg, setStatusMsg] = useState({ text: '', type: '' });
-      const [selectedCategory, setSelectedCategory] = useState('Semua');
-      const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]);
+
+      // 1. FUNGSI UNTUK MENARIK DATA DARI GOOGLE SHEETS
+      const loadDataFromSheets = async () => {
+        if (!SCRIPT_URL.startsWith('http')) return;
+        setIsLoading(true);
+        setStatusMsg({ text: 'Sedang menarik data...', type: 'info' });
+        try {
+          // Menambah parameter ?action=getData untuk membezakan request
+          const response = await fetch(`${SCRIPT_URL}?action=getData`);
+          const data = await response.json();
+          if (data && data.length > 0) {
+            setMyList(data);
+            setStatusMsg({ text: 'Data lama berjaya dimuat turun!', type: 'success' });
+          } else {
+            setStatusMsg({ text: 'Tiada data dijumpai di Cloud.', type: 'info' });
+          }
+        } catch (error) {
+          console.error("Gagal menarik data:", error);
+          setStatusMsg({ text: 'Gagal memuat turun data.', type: 'error' });
+        } finally {
+          setIsLoading(false);
+          setTimeout(() => setStatusMsg({ text: '', type: '' }), 3000);
+        }
+      };
+
+      // Muat data secara automatik apabila aplikasi dibuka
+      useEffect(() => {
+        loadDataFromSheets();
+      }, []);
 
       const addToMyList = (item) => {
         if (!myList.find(i => i.id === item.id)) {
           setMyList([...myList, { ...item, checked: false, quantity: 1 }]);
-          setStatusMsg({ text: `${item.name} ditambah!`, type: 'info' });
-          setTimeout(() => setStatusMsg({ text: '', type: '' }), 1500);
         }
       };
 
       const updateQuantity = (id, delta) => {
-        setMyList(myList.map(item => {
-          if (item.id === id) {
-            const newQty = Math.max(1, item.quantity + delta);
-            return { ...item, quantity: newQty };
-          }
-          return item;
-        }));
-      };
-
-      const addCustomItem = (e) => {
-        e.preventDefault();
-        if (customItemName && customItemPrice) {
-          setMyList([...myList, {
-            id: Date.now(),
-            name: customItemName,
-            category: 'Lain-lain',
-            price: parseFloat(customItemPrice),
-            checked: false,
-            quantity: 1
-          }]);
-          setCustomItemName('');
-          setCustomItemPrice('');
-          setStatusMsg({ text: 'Barang kustom ditambah!', type: 'success' });
-          setTimeout(() => setStatusMsg({ text: '', type: '' }), 1500);
-        }
+        setMyList(myList.map(item => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item));
       };
 
       const toggleCheck = (id) => {
-        setMyList(myList.map(item => 
-          item.id === id ? { ...item, checked: !item.checked } : item
-        ));
+        setMyList(myList.map(item => item.id === id ? { ...item, checked: !item.checked } : item));
       };
 
       const removeFromList = (id) => {
@@ -200,311 +90,164 @@
       };
 
       const saveDataToSheets = async () => {
-        if (myList.length === 0) return;
-        setIsSaving(true);
+        if (myList.length === 0) {
+          setStatusMsg({ text: 'Tiada barang untuk disimpan!', type: 'error' });
+          return;
+        }
+        setIsLoading(true);
         setStatusMsg({ text: 'Sedang menyimpan ke Cloud...', type: 'info' });
-
         try {
           const payload = {
-            timestamp: purchaseDate,
+            timestamp: new Date().toLocaleString(),
             items: myList.map(item => ({
               nama: item.name,
               kuantiti: item.quantity,
               harga_unit: item.price,
               jumlah: item.price * item.quantity,
               status: item.checked ? 'Dibayar' : 'Belum'
-            })),
-            total: totalEstimated
+            }))
           };
-
-          await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            cache: 'no-cache',
+          // Menggunakan POST untuk menyimpan data
+          await fetch(SCRIPT_URL, { 
+            method: 'POST', 
+            mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload) 
           });
-
-          setStatusMsg({ text: 'Data disimpan untuk tarikh: ' + purchaseDate, type: 'success' });
-          setTimeout(() => setStatusMsg({ text: '', type: '' }), 4000);
-        } catch (error) {
-          setStatusMsg({ text: 'Ralat teknikal Cloud.', type: 'error' });
+          setStatusMsg({ text: 'Berjaya disimpan ke Google Sheets!', type: 'success' });
+        } catch (e) {
+          setStatusMsg({ text: 'Ralat semasa menyimpan.', type: 'error' });
         } finally {
-          setIsSaving(false);
+          setIsLoading(false);
+          setTimeout(() => setStatusMsg({ text: '', type: '' }), 3000);
         }
       };
 
-      const totalEstimated = useMemo(() => myList.reduce((acc, item) => acc + (item.price * item.quantity), 0), [myList]);
-      const totalChecked = useMemo(() => myList.filter(i => i.checked).reduce((acc, item) => acc + (item.price * item.quantity), 0), [myList]);
-      const isOverBudget = totalEstimated > budget;
-      const budgetPercentage = Math.min((totalEstimated / budget) * 100, 100);
-
-      const categoryAnalysis = useMemo(() => {
-        const stats = {};
-        myList.forEach(item => {
-          if (!stats[item.category]) stats[item.category] = 0;
-          stats[item.category] += (item.price * item.quantity);
-        });
-        return Object.entries(stats).sort((a, b) => b[1] - a[1]);
-      }, [myList]);
-
-      const categories = ['Semua', ...new Set(MARKET_DATA.map(item => item.category))];
-
-      const filteredMarket = MARKET_DATA.filter(item => {
-        const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = selectedCategory === 'Semua' || item.category === selectedCategory;
-        return matchesSearch && matchesCategory;
-      });
+      const totalEstimated = myList.reduce((acc, item) => acc + (item.price * item.quantity), 0);
 
       return (
-        <div className="min-h-screen pb-64">
+        <div className="min-h-screen pb-40">
           <header className="bg-[#FFD93D] border-b-8 border-[#F4B400] p-6 sticky top-0 z-50 shadow-md">
-            <div className="max-w-5xl mx-auto space-y-4">
-              <div className="flex flex-wrap justify-between items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="bg-red-500 p-3 rounded-full border-2 border-white shadow-lg">
-                    <Icon name="Heart" size={24} fill="white" color="white" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl md:text-3xl font-black text-[#E63946]">まる子 Grocery</h1>
-                    <p className="text-xs font-bold text-[#8B4513]">Sistem Pengurusan Bajet</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 bg-white/90 p-3 rounded-2xl border-2 border-[#F4B400] shadow-sm">
-                  <div className="text-right border-r border-[#F4B400]/30 pr-3">
-                    <p className="text-[10px] font-black text-slate-400 uppercase">Set Bajet</p>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-bold text-slate-400">RM</span>
-                      <input 
-                        type="number" 
-                        value={budget} 
-                        onChange={(e) => setBudget(Number(e.target.value))}
-                        className="w-16 bg-transparent font-black text-lg text-[#8B4513] outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black text-slate-400 uppercase">Anggaran</p>
-                    <p className={`font-black text-lg ${isOverBudget ? 'text-red-600' : 'text-slate-700'}`}>
-                      RM {totalEstimated.toFixed(2)}
-                    </p>
-                  </div>
-                </div>
+            <div className="max-w-5xl mx-auto flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-black text-[#E63946]">まる子 Grocery</h1>
+                <p className="text-[10px] font-bold text-[#8B4513]">Auto-Sync Enabled ☁️</p>
               </div>
-
-              <div className="w-full h-4 bg-white/50 rounded-full overflow-hidden border-2 border-white relative">
-                <div 
-                  className={`h-full transition-all duration-500 ${isOverBudget ? 'bg-red-500' : 'bg-green-500'}`}
-                  style={{ width: `${budgetPercentage}%` }}
-                ></div>
+              <div className="bg-white p-3 rounded-2xl border-2 border-[#F4B400] text-right">
+                <p className="text-[10px] font-black text-slate-400">TOTAL</p>
+                <p className="font-black text-lg text-slate-700">RM {totalEstimated.toFixed(2)}</p>
               </div>
             </div>
           </header>
 
-          <main className="max-w-5xl mx-auto p-4 md:p-6">
+          <main className="max-w-5xl mx-auto p-4">
             {statusMsg.text && (
-              <div className={`mb-4 p-3 rounded-xl font-bold text-center text-sm animate-fade-in ${
-                statusMsg.type === 'success' ? 'bg-green-100 text-green-700' : 
-                statusMsg.type === 'error' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+              <div className={`mb-4 p-3 rounded-xl text-center font-bold text-sm shadow-sm animate-fade-in ${
+                statusMsg.type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 
+                statusMsg.type === 'error' ? 'bg-red-100 text-red-700 border border-red-200' :
+                'bg-blue-100 text-blue-700 border border-blue-200'
               }`}>
                 {statusMsg.text}
               </div>
             )}
 
-            <div className="flex mb-6 bg-white/50 p-2 rounded-2xl border-2 border-[#F4B400]/20 overflow-x-auto no-scrollbar">
-              <button onClick={() => setActiveTab('list')} className={`flex-1 min-w-[120px] py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'list' ? 'bg-[#E63946] text-white shadow-lg' : 'text-[#8B4513]'}`}>
-                SENARAI ({myList.length})
-              </button>
-              <button onClick={() => setActiveTab('market')} className={`flex-1 min-w-[120px] py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'market' ? 'bg-[#E63946] text-white shadow-lg' : 'text-[#8B4513]'}`}>
-                KATALOG
-              </button>
-              <button onClick={() => setActiveTab('stats')} className={`flex-1 min-w-[120px] py-3 rounded-xl text-xs font-black transition-all ${activeTab === 'stats' ? 'bg-[#E63946] text-white shadow-lg' : 'text-[#8B4513]'}`}>
-                ANALISIS
-              </button>
+            <div className="flex gap-4 mb-6">
+              <button onClick={() => setActiveTab('list')} className={`flex-1 py-3 rounded-xl font-black transition-all ${activeTab === 'list' ? 'bg-[#E63946] text-white shadow-lg scale-105' : 'bg-white text-[#8B4513]'}`}>SENARAI</button>
+              <button onClick={() => setActiveTab('market')} className={`flex-1 py-3 rounded-xl font-black transition-all ${activeTab === 'market' ? 'bg-[#E63946] text-white shadow-lg scale-105' : 'bg-white text-[#8B4513]'}`}>KATALOG</button>
             </div>
 
-            {activeTab === 'stats' ? (
-              <div className="space-y-6 animate-fade-in">
-                <div className="bg-white p-6 rounded-3xl shadow-xl border-t-8 border-blue-400">
-                  <h2 className="text-xl font-black text-[#5C4033] mb-4 flex items-center gap-2">
-                    <Icon name="PieChart" className="text-blue-500" /> Analisis Kategori
-                  </h2>
-                  
-                  {categoryAnalysis.length === 0 ? (
-                    <p className="text-center py-10 text-slate-300 font-bold">Tiada data untuk dianalisis.</p>
+            {activeTab === 'list' ? (
+              <div className="space-y-4 animate-fade-in">
+                <div className="flex justify-between items-center gap-2">
+                  <button 
+                    onClick={loadDataFromSheets} 
+                    disabled={isLoading}
+                    className="flex-1 flex items-center justify-center gap-2 bg-blue-500 text-white px-4 py-3 rounded-xl text-xs font-black shadow-md active:scale-95 disabled:opacity-50"
+                  >
+                    <Icon name="RefreshCw" size={14} className={isLoading ? 'animate-spin' : ''} /> 
+                    {isLoading ? 'SYNCING...' : 'SYNC DATA'}
+                  </button>
+                  <button 
+                    onClick={saveDataToSheets} 
+                    disabled={isLoading}
+                    className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-3 rounded-xl text-xs font-black shadow-md active:scale-95 disabled:opacity-50"
+                  >
+                    <Icon name="CloudUpload" size={14} /> SIMPAN KE CLOUD
+                  </button>
+                </div>
+                
+                <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-t-8 border-red-500">
+                  {myList.length === 0 ? (
+                    <div className="p-16 text-center">
+                      <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                         <Icon name="ShoppingCart" size={32} color="#CBD5E1" />
+                      </div>
+                      <p className="text-slate-400 font-bold">Senarai masih kosong.</p>
+                      <p className="text-[10px] text-slate-300">Tekan SYNC atau tambah dari KATALOG.</p>
+                    </div>
                   ) : (
-                    <div className="space-y-4">
-                      {categoryAnalysis.map(([cat, amount]) => (
-                        <div key={cat} className="space-y-1">
-                          <div className="flex justify-between text-sm font-black">
-                            <span className="text-[#8B4513]">{cat}</span>
-                            <span className="text-slate-600">RM {amount.toFixed(2)} ({(amount/totalEstimated*100).toFixed(0)}%)</span>
+                    <div className="divide-y divide-slate-50">
+                      {myList.map(item => (
+                        <div key={item.id} className="p-4 flex items-center justify-between hover:bg-yellow-50/30">
+                          <div className="flex items-center gap-3">
+                            <button onClick={() => toggleCheck(item.id)} className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${item.checked ? 'bg-red-500 border-red-500 text-white shadow-inner' : 'border-yellow-400 bg-white'}`}>
+                              {item.checked && <Icon name="Check" size={16} strokeWidth={4} />}
+                            </button>
+                            <div>
+                              <p className={`font-black text-sm ${item.checked ? 'line-through text-slate-300' : 'text-slate-700'}`}>{item.name}</p>
+                              <p className="text-[10px] text-yellow-500 font-black uppercase tracking-tighter">{item.category}</p>
+                            </div>
                           </div>
-                          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-blue-400 rounded-full" 
-                              style={{ width: `${(amount/totalEstimated*100)}%` }}
-                            ></div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center bg-slate-100 rounded-full p-1">
+                              <button onClick={() => updateQuantity(item.id, -1)} className="p-1 text-slate-500"><Icon name="Minus" size={12} /></button>
+                              <span className="px-2 font-black text-xs min-w-[20px] text-center">{item.quantity}</span>
+                              <button onClick={() => updateQuantity(item.id, 1)} className="p-1 text-slate-500"><Icon name="Plus" size={12} /></button>
+                            </div>
+                            <p className="font-black text-sm w-16 text-right text-slate-600">RM {(item.price * item.quantity).toFixed(2)}</p>
+                            <button onClick={() => removeFromList(item.id)} className="text-slate-200 hover:text-red-400 transition-colors">
+                              <Icon name="Trash2" size={16} />
+                            </button>
                           </div>
                         </div>
                       ))}
-                      
-                      <div className="pt-6 mt-6 border-t-2 border-dashed border-slate-100 grid grid-cols-2 gap-4">
-                        <div className="bg-green-50 p-4 rounded-2xl">
-                          <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">Paling Banyak</p>
-                          <p className="font-black text-[#8B4513] truncate">{categoryAnalysis[0][0]}</p>
-                        </div>
-                        <div className="bg-yellow-50 p-4 rounded-2xl">
-                          <p className="text-[10px] font-black text-yellow-600 uppercase tracking-widest">Purata/Item</p>
-                          <p className="font-black text-[#8B4513]">RM {(totalEstimated / myList.length || 0).toFixed(2)}</p>
-                        </div>
-                      </div>
                     </div>
                   )}
                 </div>
-
-                <div className="bg-[#E63946] p-6 rounded-3xl text-white shadow-xl">
-                  <h3 className="font-black mb-2 text-lg">Tips Maruko! 🌸</h3>
-                  <p className="text-sm opacity-90 leading-relaxed font-bold">
-                    {isOverBudget 
-                      ? "Alamak! Bajet sudah lebih. Cuba semak kategori yang paling mahal dan lihat jika ada barang yang boleh dikurangkan."
-                      : "Bagus! Anda masih dalam bajet. Jangan lupa simpan rekod ini ke Google Sheets untuk rujukan masa depan."}
-                  </p>
-                </div>
-              </div>
-            ) : activeTab === 'list' ? (
-              <div className="space-y-6 animate-fade-in">
-                <div className="bg-white p-4 rounded-2xl border-2 border-[#F4B400]/20 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <Icon name="Calendar" size={20} className="text-[#E63946]" />
-                    <span className="text-sm font-black text-[#8B4513]">TARIKH BELI:</span>
-                  </div>
-                  <input 
-                    type="date" 
-                    value={purchaseDate}
-                    onChange={(e) => setPurchaseDate(e.target.value)}
-                    className="bg-yellow-50 px-4 py-2 rounded-xl font-black text-[#E63946] border border-yellow-200 outline-none"
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <form onSubmit={addCustomItem} className="flex-1 flex gap-2 bg-white p-3 rounded-2xl shadow-md border-2 border-[#FFD93D]">
-                    <input type="text" placeholder="Barang kustom..." className="flex-1 bg-transparent px-2 font-bold outline-none text-sm" value={customItemName} onChange={(e) => setCustomItemName(e.target.value)} required />
-                    <input type="number" step="0.01" placeholder="RM" className="w-16 bg-slate-50 rounded-lg px-2 text-right font-bold text-sm" value={customItemPrice} onChange={(e) => setCustomItemPrice(e.target.value)} required />
-                    <button type="submit" className="bg-[#4ECDC4] text-white p-2 rounded-xl shadow-lg flex items-center justify-center min-w-[44px]">
-                      <Icon name="Plus" size={20} strokeWidth={4} />
-                    </button>
-                  </form>
-                  {myList.length > 0 && (
-                    <button onClick={saveDataToSheets} disabled={isSaving} className="bg-[#E63946] text-white px-4 rounded-2xl shadow-lg flex items-center gap-2 font-black text-xs disabled:opacity-50 transition-all active:scale-95">
-                      {isSaving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <Icon name="CloudUpload" size={18} />}
-                      <span>{isSaving ? 'SIMPAN...' : 'SIMPAN'}</span>
-                    </button>
-                  )}
-                </div>
-
-                <div className="bg-white rounded-3xl shadow-xl border-t-8 border-red-500 overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left min-w-[450px]">
-                      <tbody className="divide-y divide-slate-50">
-                        {myList.length === 0 ? (
-                          <tr><td className="p-20 text-center font-bold text-slate-300">Senarai kosong.</td></tr>
-                        ) : (
-                          myList.map(item => (
-                            <tr key={item.id} className={item.checked ? 'bg-slate-50/50' : ''}>
-                              <td className="p-4 w-12 text-center">
-                                <button onClick={() => toggleCheck(item.id)} className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${item.checked ? 'bg-red-500 border-red-500 text-white' : 'border-yellow-400 bg-white'}`}>
-                                  {item.checked && <Icon name="Check" size={16} strokeWidth={4} />}
-                                </button>
-                              </td>
-                              <td className="p-4">
-                                <p className={`font-black text-sm ${item.checked ? 'line-through text-slate-300' : 'text-[#5C4033]'}`}>{item.name}</p>
-                                <p className="text-[9px] text-yellow-500 font-bold uppercase">{item.category}</p>
-                              </td>
-                              <td className="p-4 w-28">
-                                <div className="flex items-center justify-center bg-yellow-50 rounded-full p-1 border border-yellow-100">
-                                  <button onClick={() => updateQuantity(item.id, -1)} className="p-1 text-red-400"><Icon name="Minus" size={14} strokeWidth={4} /></button>
-                                  <span className="px-2 font-bold text-xs">{item.quantity}</span>
-                                  <button onClick={() => updateQuantity(item.id, 1)} className="p-1 text-green-500"><Icon name="Plus" size={14} strokeWidth={4} /></button>
-                                </div>
-                              </td>
-                              <td className="p-4 text-right font-black text-sm">RM {(item.price * item.quantity).toFixed(2)}</td>
-                              <td className="p-4 w-10">
-                                <button onClick={() => removeFromList(item.id)} className="text-slate-200 hover:text-red-500"><Icon name="Trash2" size={16} /></button>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
               </div>
             ) : (
-              <div className="space-y-6 animate-fade-in">
-                <div className="flex flex-col gap-4">
-                  <div className="relative">
-                    <input type="text" placeholder="Cari barang..." className="w-full p-4 pl-12 bg-white rounded-2xl shadow-md border-2 border-[#FFD93D] font-bold outline-none text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500"><Icon name="Search" size={18} /></div>
-                  </div>
-                  
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                    {categories.map(cat => (
-                      <button 
-                        key={cat} 
-                        onClick={() => setSelectedCategory(cat)}
-                        className={`px-4 py-2 rounded-full whitespace-nowrap text-[10px] font-black border-2 transition-all ${selectedCategory === cat ? 'bg-[#E63946] border-[#E63946] text-white shadow-md' : 'bg-white border-yellow-200 text-[#8B4513]'}`}
-                      >
-                        {cat.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {filteredMarket.map(item => {
-                    const isAdded = myList.find(i => i.id === item.id);
-                    return (
-                      <button key={item.id} onClick={() => !isAdded && addToMyList(item)} className={`p-4 rounded-2xl border-2 transition-all text-left flex flex-col justify-between h-32 relative ${isAdded ? 'bg-red-50 border-red-100 opacity-60' : 'bg-white border-yellow-200 hover:border-red-400 shadow-sm'}`}>
-                        <div>
-                          <p className="font-black text-xs mb-1 leading-tight line-clamp-2">{item.name}</p>
-                          <p className="text-[9px] font-bold text-yellow-600 opacity-60">{item.category}</p>
-                        </div>
-                        <p className="text-red-500 font-black text-sm">RM {item.price.toFixed(2)}</p>
-                        {isAdded && <div className="absolute top-2 right-2 text-red-500"><Icon name="CheckCircle" size={14} fill="currentColor" color="white" /></div>}
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="grid grid-cols-2 gap-4 animate-fade-in">
+                {[
+                  { id: 1, name: 'Sayur Midin', price: 4.50, category: 'Sayur' },
+                  { id: 2, name: 'Ikan Terubuk', price: 15.00, category: 'Ikan' },
+                  { id: 3, name: 'Beras Bario', price: 18.00, category: 'Beras' },
+                  { id: 4, name: 'Telur Gred A', price: 17.50, category: 'Barangan' }
+                ].map(item => {
+                  const exists = myList.find(i => i.name === item.name);
+                  return (
+                    <button 
+                      key={item.id} 
+                      onClick={() => !exists && addToMyList(item)} 
+                      className={`p-4 rounded-2xl border-4 text-left transition-all active:scale-95 ${
+                        exists ? 'bg-red-50 border-red-100 opacity-60' : 'bg-white border-[#FFD93D] shadow-md'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="bg-yellow-100 text-yellow-700 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">{item.category}</span>
+                        {exists && <Icon name="CheckCircle" size={14} className="text-red-500" />}
+                      </div>
+                      <p className="font-black text-xs text-slate-700 mb-1">{item.name}</p>
+                      <p className="text-[#E63946] font-black text-sm">RM {item.price.toFixed(2)}</p>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </main>
-
-          {myList.length > 0 && (
-            <div className="fixed bottom-0 left-0 right-0 p-4 md:p-6 z-40 bg-gradient-to-t from-[#FFFBEB] via-[#FFFBEB]/80 to-transparent pointer-events-none">
-              <div className="max-w-5xl mx-auto flex flex-col items-end gap-3 pointer-events-auto">
-                <div className="flex gap-3">
-                  <div className="bg-white px-4 py-2 md:px-6 md:py-3 rounded-2xl border-2 border-yellow-400 shadow-lg text-right">
-                    <p className="text-[9px] font-black text-slate-400 uppercase">Baki</p>
-                    <p className={`text-sm md:text-lg font-bold ${(budget - totalEstimated) < 0 ? 'text-red-500' : 'text-[#8B4513]'}`}>
-                      RM {(budget - totalEstimated).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className={`px-6 py-2 md:px-8 md:py-3 rounded-2xl border-2 border-white shadow-xl text-right transition-all ${totalChecked > budget ? 'bg-red-600 text-white animate-shake' : 'bg-red-500 text-white'}`}>
-                    <p className="text-[9px] font-black text-red-100 uppercase tracking-widest">Dibayar</p>
-                    <p className="text-xl md:text-2xl font-black">RM {totalChecked.toFixed(2)}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       );
     }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
